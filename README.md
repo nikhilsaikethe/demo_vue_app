@@ -29,6 +29,25 @@ See [Vite Configuration Reference](https://vite.dev/config/).
 npm install
 ```
 
+### Environment Configuration
+
+This project uses OpenObserve for Real User Monitoring (RUM) and logging. To set up:
+
+1. Copy the example environment file:
+   ```sh
+   cp .env.example .env
+   ```
+
+2. Update the `.env` file with your OpenObserve credentials:
+   - `VITE_OPENOBSERVE_CLIENT_TOKEN`: Your OpenObserve client token
+   - `VITE_OPENOBSERVE_APPLICATION_ID`: Your application identifier
+   - `VITE_OPENOBSERVE_SITE`: OpenObserve server URL (e.g., `localhost:5080`)
+   - Other configuration options as needed
+
+3. Ensure your OpenObserve server is running and accessible
+
+**Note:** The `.env` file is excluded from Git to protect your credentials. Never commit sensitive tokens to version control.
+
 ### Compile and Hot-Reload for Development
 
 ```sh
@@ -71,3 +90,27 @@ npm run test:e2e -- --debug
 ```sh
 npm run lint
 ```
+
+## OpenObserve Integration
+
+This project includes OpenObserve for monitoring and observability:
+
+- **Real User Monitoring (RUM)**: Tracks user interactions, page loads, and performance metrics
+- **Error Logging**: Automatically forwards errors to OpenObserve with full context
+- **Session Replay**: Records user sessions for debugging
+- **Resource Tracking**: Monitors network requests and asset loading
+- **Performance Tracking**: Identifies long tasks and performance bottlenecks
+
+### Features Enabled
+
+- User interaction tracking
+- Resource monitoring
+- Long task detection
+- Session replay recording
+- Automatic error forwarding to logs
+
+### Configuration
+
+All OpenObserve settings are configured via environment variables in the `.env` file. See the Environment Configuration section above for setup instructions.
+
+The integration is implemented in [src/config/openobserve.ts](src/config/openobserve.ts) and initialized in [src/main.ts](src/main.ts).
