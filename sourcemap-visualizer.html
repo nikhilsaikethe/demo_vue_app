@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Source Map Visualizer - Interactive Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 1.2em;
+      opacity: 0.9;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .section {
+      margin-bottom: 40px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      background: #f5f5f5;
+      padding: 15px 20px;
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #333;
+      border-bottom: 2px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-body {
+      padding: 20px;
+    }
+
+    .split-view {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .code-panel {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .code-panel h3 {
+      color: #4ec9b0;
+      margin-bottom: 15px;
+      font-size: 1.1em;
+    }
+
+    .code-line {
+      display: flex;
+      gap: 15px;
+      padding: 2px 0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .code-line:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .code-line.highlighted {
+      background: rgba(255, 215, 0, 0.2);
+      border-left: 3px solid #ffd700;
+      padding-left: 5px;
+    }
+
+    .line-number {
+      color: #858585;
+      text-align: right;
+      min-width: 30px;
+      user-select: none;
+    }
+
+    .line-content {
+      flex: 1;
+    }
+
+    .names-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .name-badge {
+      background: #667eea;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .name-index {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .mappings-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .mappings-table th {
+      background: #667eea;
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .mappings-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .mappings-table tr:hover {
+      background: #f5f5f5;
+    }
+
+    .segment-badge {
+      background: #764ba2;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      display: inline-block;
+    }
+
+    .position {
+      font-family: monospace;
+      color: #667eea;
+      font-weight: bold;
+    }
+
+    .arrow {
+      color: #764ba2;
+      font-size: 1.2em;
+    }
+
+    .interactive-panel {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      align-items: center;
+    }
+
+    .input-group label {
+      font-weight: bold;
+      min-width: 150px;
+    }
+
+    .input-group input {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .input-group button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+
+    .input-group button:hover {
+      background: #764ba2;
+    }
+
+    .result-box {
+      background: white;
+      border: 2px solid #667eea;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 15px;
+      display: none;
+    }
+
+    .result-box.show {
+      display: block;
+    }
+
+    .result-item {
+      margin: 10px 0;
+      padding: 10px;
+      background: #f5f5f5;
+      border-radius: 4px;
+    }
+
+    .result-item strong {
+      color: #667eea;
+    }
+
+    .char-highlight {
+      background: yellow;
+      color: black;
+      font-weight: bold;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+
+    .minified-ruler {
+      font-family: monospace;
+      font-size: 10px;
+      color: #858585;
+      white-space: pre;
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+
+    .quick-positions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    .quick-btn {
+      background: #764ba2;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.3s;
+    }
+
+    .quick-btn:hover {
+      background: #667eea;
+    }
+
+    .info-box {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+
+    .warning-box {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+
+    .success-box {
+      background: #d4edda;
+      border-left: 4px solid #28a745;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+
+    @media (max-width: 768px) {
+      .split-view {
+        grid-template-columns: 1fr;
+      }
+
+      .header h1 {
+        font-size: 1.8em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🗺️ Source Map Visualizer</h1>
+      <p>Interactive visualization of how minified code maps to original source</p>
+    </div>
+
+    <div class="content">
+      <!-- Info Section -->
+      <div class="info-box">
+        <strong>📘 What is this?</strong><br>
+        This page visualizes how source maps work by showing the relationship between your minified production code and the original Vue source code. You can explore the mappings interactively!
+      </div>
+
+      <!-- Names Array Section -->
+      <div class="section">
+        <div class="section-header">
+          <span>📋</span> Names Array - Original Identifiers
+        </div>
+        <div class="section-body">
+          <p style="margin-bottom: 15px; color: #666;">
+            These are the original variable/function names before minification. When you see <code>t</code> in minified code, the source map tells the browser it was originally <code>_hoisted_1</code>.
+          </p>
+          <div class="names-grid" id="names-grid">
+            <!-- Will be populated by JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Source Code Comparison -->
+      <div class="section">
+        <div class="section-header">
+          <span>🔍</span> Source Code Comparison
+        </div>
+        <div class="section-body">
+          <div class="split-view">
+            <div class="code-panel">
+              <h3>📄 Original Source (AboutView.vue)</h3>
+              <div id="original-source">
+                <!-- Will be populated -->
+              </div>
+            </div>
+            <div class="code-panel">
+              <h3>⚡ Minified Code (AboutView-Dzqdte5y.js)</h3>
+              <div id="minified-code">
+                <!-- Will be populated -->
+              </div>
+              <div class="minified-ruler" id="ruler">
+                <!-- Will be populated -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mappings Table -->
+      <div class="section">
+        <div class="section-header">
+          <span>🗺️</span> Decoded Mappings (First 15)
+        </div>
+        <div class="section-body">
+          <p style="margin-bottom: 15px; color: #666;">
+            Each mapping connects a position in the minified code to the original source. Click on a row to highlight the position!
+          </p>
+          <div style="overflow-x: auto;">
+            <table class="mappings-table" id="mappings-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Segment</th>
+                  <th>Decoded</th>
+                  <th>Minified Position</th>
+                  <th></th>
+                  <th>Original Position</th>
+                  <th>Original Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Will be populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive Explorer -->
+      <div class="section">
+        <div class="section-header">
+          <span>🎮</span> Interactive Explorer
+        </div>
+        <div class="section-body">
+          <p style="margin-bottom: 15px; color: #666;">
+            Enter a column number in the minified code to see where it came from in the original source!
+          </p>
+
+          <div class="interactive-panel">
+            <div class="input-group">
+              <label for="column-input">Column Number:</label>
+              <input type="number" id="column-input" placeholder="Enter column (e.g., 62, 65, 125)" min="0">
+              <button onclick="lookupColumn()">🔍 Look Up</button>
+            </div>
+
+            <div class="quick-positions">
+              <strong>Quick Jump:</strong>
+              <button class="quick-btn" onclick="lookupColumn(62)">Column 62 (t)</button>
+              <button class="quick-btn" onclick="lookupColumn(65)">Column 65 (class)</button>
+              <button class="quick-btn" onclick="lookupColumn(125)">Column 125 (o)</button>
+              <button class="quick-btn" onclick="lookupColumn(129)">Column 129 (s)</button>
+              <button class="quick-btn" onclick="lookupColumn(137)">Column 137 (t)</button>
+            </div>
+
+            <div class="result-box" id="result-box">
+              <!-- Results will appear here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- How It Works -->
+      <div class="section">
+        <div class="section-header">
+          <span>💡</span> How Browser DevTools Uses This
+        </div>
+        <div class="section-body">
+          <div class="success-box">
+            <strong>✅ With Source Maps (sourcemap: true)</strong><br>
+            When an error occurs at <code>AboutView-Dzqdte5y.js:1:137</code>:<br><br>
+            1. Browser sees <code>//# sourceMappingURL=AboutView-Dzqdte5y.js.map</code><br>
+            2. Fetches the .map file (only when DevTools open)<br>
+            3. Looks up column 137 in the mappings<br>
+            4. Finds: "This came from AboutView.vue line 2, column 2 (_hoisted_1)"<br>
+            5. Shows you: <code>AboutView.vue:2:2 (_hoisted_1)</code><br>
+            6. Displays original source code when you click!
+          </div>
+
+          <div class="warning-box">
+            <strong>❌ Without Source Maps (sourcemap: false)</strong><br>
+            Error at <code>AboutView-Dzqdte5y.js:1:137</code>:<br><br>
+            • No way to know where this came from<br>
+            • Shows minified variable names (t, s, o instead of _hoisted_1, _createElementBlock)<br>
+            • Everything on line 1!<br>
+            • Debugging is nearly impossible
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Source map data from your actual build
+    const sourceMap = {
+      "version": 3,
+      "file": "AboutView-Dzqdte5y.js",
+      "sources": ["../../src/views/AboutView.vue"],
+      "sourcesContent": ["<template>\n  <div class=\"about\">\n    <h1>This is an about page</h1>\n  </div>\n</template>\n\n<style>\n@media (min-width: 1024px) {\n  .about {\n    min-height: 100vh;\n    display: flex;\n    align-items: center;\n  }\n}\n</style>\n"],
+      "names": ["_hoisted_1", "class", "_openBlock", "_createElementBlock", "_cache", "_createElementVNode"],
+      "mappings": "8DACOA,EAAA,CAAAC,MAAM,+CAAX,OAAAC,IAAAC,EAEM,MAFNH,EAEM,IAAAI,EAAA,KAAAA,EAAA,GAAA,CADJC,EAA8B,UAA1B,yBAAqB"
+    };
+
+    const minifiedCode = `import{_ as a,c as s,a as n,o}from"./index-Blw2-PgA.js";const t={class:"about"};const e=a({},[["render",function(a,e){return o(),s("div",t,[...e[0]||(e[0]=[n("h1",null,"This is an about page",-1)])])}]]);export{e as default};`;
+
+    const VLQ_BASE64_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+    function decodeVLQ(str) {
+      const values = [];
+      let shift = 0;
+      let value = 0;
+      let index = 0;
+
+      while (index < str.length) {
+        const digit = VLQ_BASE64_CHARS.indexOf(str[index]);
+        if (digit === -1) throw new Error(`Invalid character: ${str[index]}`);
+
+        const hasContinuation = (digit & 32) !== 0;
+        const digitValue = digit & 31;
+
+        value += digitValue << shift;
+        shift += 5;
+
+        if (!hasContinuation) {
+          const shouldNegate = value & 1;
+          value = value >> 1;
+          values.push(shouldNegate ? -value : value);
+          value = 0;
+          shift = 0;
+        }
+        index++;
+      }
+
+      return values;
+    }
+
+    function decodeAllMappings() {
+      const segments = sourceMap.mappings.split(',');
+      const mappings = [];
+
+      let genCol = 0, sourceIndex = 0, sourceLine = 0, sourceCol = 0, nameIndex = 0;
+
+      segments.forEach((segment, i) => {
+        if (!segment) return;
+
+        const decoded = decodeVLQ(segment);
+        genCol += decoded[0];
+
+        if (decoded.length > 1) {
+          sourceIndex += decoded[1];
+          sourceLine += decoded[2];
+          sourceCol += decoded[3];
+        }
+
+        if (decoded.length > 4) {
+          nameIndex += decoded[4];
+        }
+
+        mappings.push({
+          index: i,
+          segment,
+          decoded,
+          genCol,
+          sourceIndex,
+          sourceLine: sourceLine + 1,
+          sourceCol,
+          nameIndex: decoded.length > 4 ? nameIndex : null
+        });
+      });
+
+      return mappings;
+    }
+
+    // Populate names grid
+    function populateNames() {
+      const grid = document.getElementById('names-grid');
+      sourceMap.names.forEach((name, i) => {
+        const badge = document.createElement('div');
+        badge.className = 'name-badge';
+        badge.innerHTML = `<span class="name-index">[${i}]</span> <span>${name}</span>`;
+        grid.appendChild(badge);
+      });
+    }
+
+    // Populate source code
+    function populateSourceCode() {
+      const originalDiv = document.getElementById('original-source');
+      const lines = sourceMap.sourcesContent[0].split('\n');
+
+      lines.forEach((line, i) => {
+        const lineDiv = document.createElement('div');
+        lineDiv.className = 'code-line';
+        lineDiv.innerHTML = `
+          <span class="line-number">${(i + 1).toString().padStart(2, '0')}</span>
+          <span class="line-content">${escapeHtml(line) || ' '}</span>
+        `;
+        originalDiv.appendChild(lineDiv);
+      });
+
+      // Populate minified code
+      const minifiedDiv = document.getElementById('minified-code');
+      const lineDiv = document.createElement('div');
+      lineDiv.className = 'code-line';
+      lineDiv.innerHTML = `
+        <span class="line-number">1</span>
+        <span class="line-content" id="minified-line">${escapeHtml(minifiedCode)}</span>
+      `;
+      minifiedDiv.appendChild(lineDiv);
+
+      // Add ruler
+      const ruler = document.getElementById('ruler');
+      let rulerText = '';
+      for (let i = 0; i < Math.min(300, minifiedCode.length); i += 10) {
+        rulerText += i.toString().padEnd(10, ' ');
+      }
+      ruler.textContent = rulerText;
+    }
+
+    // Populate mappings table
+    function populateMappingsTable() {
+      const tbody = document.querySelector('#mappings-table tbody');
+      const mappings = decodeAllMappings();
+
+      mappings.slice(0, 15).forEach(mapping => {
+        const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer';
+        tr.onclick = () => highlightPosition(mapping.genCol);
+
+        const namePart = mapping.nameIndex !== null
+          ? `<strong>${sourceMap.names[mapping.nameIndex]}</strong>`
+          : '<em style="color: #999;">—</em>';
+
+        tr.innerHTML = `
+          <td>${mapping.index + 1}</td>
+          <td><span class="segment-badge">${mapping.segment}</span></td>
+          <td style="font-family: monospace; font-size: 12px;">[${mapping.decoded.join(', ')}]</td>
+          <td class="position">Line 1:${mapping.genCol}</td>
+          <td class="arrow">→</td>
+          <td class="position">Line ${mapping.sourceLine}:${mapping.sourceCol}</td>
+          <td>${namePart}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function highlightPosition(col) {
+      const minifiedLine = document.getElementById('minified-line');
+      const text = minifiedCode;
+
+      if (col >= text.length) return;
+
+      const before = escapeHtml(text.substring(0, col));
+      const char = escapeHtml(text[col]);
+      const after = escapeHtml(text.substring(col + 1));
+
+      minifiedLine.innerHTML = `${before}<span class="char-highlight">${char}</span>${after}`;
+      minifiedLine.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function lookupColumn(col) {
+      if (typeof col !== 'number') {
+        col = parseInt(document.getElementById('column-input').value);
+      } else {
+        document.getElementById('column-input').value = col;
+      }
+
+      if (isNaN(col) || col < 0) {
+        alert('Please enter a valid column number');
+        return;
+      }
+
+      const mappings = decodeAllMappings();
+      let found = null;
+
+      // Find the mapping for this column or the closest one before it
+      for (let i = mappings.length - 1; i >= 0; i--) {
+        if (mappings[i].genCol <= col) {
+          found = mappings[i];
+          break;
+        }
+      }
+
+      const resultBox = document.getElementById('result-box');
+
+      if (found) {
+        highlightPosition(col);
+
+        const char = minifiedCode[col] || '';
+        const context = minifiedCode.substring(Math.max(0, col - 10), col + 20);
+        const originalLines = sourceMap.sourcesContent[0].split('\n');
+        const originalLine = originalLines[found.sourceLine - 1] || '';
+
+        const nameInfo = found.nameIndex !== null
+          ? `<div class="result-item"><strong>Original Name:</strong> ${sourceMap.names[found.nameIndex]}</div>`
+          : '';
+
+        resultBox.innerHTML = `
+          <h3 style="color: #667eea; margin-bottom: 15px;">📍 Position Lookup Result</h3>
+
+          <div class="result-item">
+            <strong>Minified Position:</strong> Line 1, Column ${col}
+          </div>
+
+          <div class="result-item">
+            <strong>Character:</strong> <code style="background: yellow; padding: 2px 6px; color: black;">"${escapeHtml(char)}"</code>
+          </div>
+
+          <div class="result-item">
+            <strong>Context:</strong> <code style="font-family: monospace;">...${escapeHtml(context)}...</code>
+          </div>
+
+          <div class="result-item">
+            <strong>Maps To:</strong> ${sourceMap.sources[0]} Line ${found.sourceLine}, Column ${found.sourceCol}
+          </div>
+
+          ${nameInfo}
+
+          <div class="result-item">
+            <strong>Original Source Line:</strong><br>
+            <code style="font-family: monospace; display: block; margin-top: 5px; padding: 10px; background: #f5f5f5; border-radius: 4px;">
+              ${escapeHtml(originalLine)}
+            </code>
+          </div>
+        `;
+        resultBox.classList.add('show');
+      } else {
+        resultBox.innerHTML = `
+          <h3 style="color: #e74c3c;">❌ Not Found</h3>
+          <p>No mapping found for column ${col}. Try a different position.</p>
+        `;
+        resultBox.classList.add('show');
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Initialize on page load
+    window.onload = function() {
+      populateNames();
+      populateSourceCode();
+      populateMappingsTable();
+    };
+  </script>
+</body>
+</html>

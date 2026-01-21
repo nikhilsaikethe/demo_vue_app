@@ -17,6 +17,13 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue'),
     },
+    {
+      path: '/error-demo',
+      name: 'error-demo',
+      // Lazy-loaded - generates a separate chunk (ErrorDemo.[hash].js)
+      // This allows us to see ErrorDemo's source map as a separate file
+      component: () => import('../components/ErrorDemo.vue'),
+    },
   ],
 })
 

@@ -1,19 +1,11 @@
 <template>
   <div class="error-demo">
     <h2>Source Map Error Demo</h2>
-    <p>Click the buttons below to trigger errors:</p>
+    <p>Click the button below to trigger an error and see how source maps help debugging:</p>
 
-    <div class="button-group">
-      <button @click="triggerUndefinedError" class="error-btn">
-        Trigger Undefined Error
-      </button>
-      <button @click="triggerTypeError" class="error-btn">
-        Trigger Type Error
-      </button>
-      <button @click="triggerReferenceError" class="error-btn">
-        Trigger Reference Error
-      </button>
-    </div>
+    <button @click="triggerError" class="error-btn">
+      Trigger Error
+    </button>
 
     <div v-if="result" class="result">
       {{ result }}
@@ -27,25 +19,10 @@ import { ref } from 'vue'
 const result = ref<string>('')
 
 // This will cause an error when trying to access property on undefined
-const triggerUndefinedError = () => {
+const triggerError = () => {
   const obj: any = undefined
   // This line will throw: Cannot read property 'nonExistent' of undefined
   console.log(obj.nonExistent.property)
-  result.value = 'This should not appear'
-}
-
-// This will cause a type error
-const triggerTypeError = () => {
-  const num: any = null
-  // This line will throw: Cannot read properties of null
-  const value = num.toUpperCase()
-  result.value = value
-}
-
-// This will cause a reference error
-const triggerReferenceError = () => {
-  // @ts-ignore - intentionally calling undefined variable
-  console.log(thisVariableDoesNotExist)
   result.value = 'This should not appear'
 }
 </script>
@@ -58,6 +35,7 @@ const triggerReferenceError = () => {
   border: 2px solid #ff6b6b;
   border-radius: 8px;
   background: #fff5f5;
+  text-align: center;
 }
 
 h2 {
@@ -65,16 +43,9 @@ h2 {
   margin-top: 0;
 }
 
-.button-group {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin: 2rem 0;
-}
-
 .error-btn {
   padding: 1rem 2rem;
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: bold;
   color: white;
   background: #ff6b6b;
@@ -82,6 +53,7 @@ h2 {
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.3s;
+  margin: 2rem 0;
 }
 
 .error-btn:hover {

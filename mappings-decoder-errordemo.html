@@ -1,0 +1,253 @@
+<!-- This will be inserted into sourcemap-visualizer-errordemo.html -->
+<!-- Add this section between Step 4 and Step 5 -->
+
+        <div class="arrow-down">↓</div>
+
+        <!-- Step 4.5: How Mappings Work -->
+        <div class="pipeline-step">
+          <div class="step-header">
+            <div class="step-number">4.5</div>
+            <div>
+              <div>🔬 How Mappings Actually Work</div>
+              <div style="font-size: 0.7em; opacity: 0.9; font-weight: normal;">Decoding the magic string</div>
+            </div>
+          </div>
+          <div class="step-body">
+
+            <div class="transformation-info">
+              <strong>🎯 The Mission:</strong> Convert this cryptic string into usable data<br>
+              <code style="background: #f5f5f5; padding: 5px; border-radius: 3px;">"wKAkBA,MAAMA,EAASC..."</code>
+              <br>This encodes the position of EVERY identifier in your minified code!
+            </div>
+
+            <div class="code-display">
+              <h4>📊 The Actual Mappings String from ErrorDemo</h4>
+              <pre style="margin: 0; color: #d4d4d4; white-space: pre-wrap; word-wrap: break-word;">wKAkBA,MAAMA,EAASC,EAAY,IAGrBC,EAAe,KAGnBC,QAAQC,UAFS,GAEDC,YAAYC,UAC5BN,EAAOO,MAAQ</pre>
+            </div>
+
+            <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 4px; margin: 20px 0;">
+              <strong>🔍 What does this mean?</strong><br><br>
+              • <strong>Commas (,)</strong> separate each mapping point<br>
+              • <strong>No semicolons</strong> because minified code is all on 1 line<br>
+              • Each segment uses <strong>Base64 VLQ encoding</strong> (Variable Length Quantity)<br>
+              • Values are <strong>RELATIVE</strong> (deltas), not absolute positions
+            </div>
+
+            <h3 style="margin: 30px 0 20px 0; color: #333;">Step-by-Step: Decoding One Mapping</h3>
+
+            <div style="background: #f9f9f9; padding: 25px; border-radius: 8px; margin: 20px 0;">
+              <h4 style="color: #ff6b6b; margin-bottom: 15px;">Example: Decoding "MAAMA"</h4>
+
+              <div style="margin: 20px 0;">
+                <strong>Step 1: Split into characters</strong>
+                <div style="background: white; padding: 15px; border-radius: 6px; margin-top: 10px; font-family: monospace;">
+                  M - A - A - M - A
+                </div>
+              </div>
+
+              <div style="margin: 20px 0;">
+                <strong>Step 2: Convert Base64 to numbers</strong>
+                <div style="background: white; padding: 15px; border-radius: 6px; margin-top: 10px;">
+                  <table style="width: 100%; border-collapse: collapse;">
+                    <tr style="background: #f5f5f5;">
+                      <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Character</th>
+                      <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Base64 Value</th>
+                      <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Binary</th>
+                    </tr>
+                    <tr>
+                      <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; font-weight: bold;">M</td>
+                      <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;">12</td>
+                      <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;">001100</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; font-weight: bold;">A</td>
+                      <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;">0</td>
+                      <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;">000000</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; font-weight: bold;">M</td>
+                      <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;">12</td>
+                      <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;">001100</td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; font-weight: bold;">A</td>
+                      <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;">0</td>
+                      <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;">000000</td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+
+              <div style="margin: 20px 0;">
+                <strong>Step 3: Apply VLQ decoding algorithm</strong>
+                <div style="background: white; padding: 15px; border-radius: 6px; margin-top: 10px; font-family: monospace; font-size: 13px;">
+                  M (001100) → continuation=0, value=6<br>
+                  A (000000) → continuation=0, value=0<br>
+                  A (000000) → continuation=0, value=0<br>
+                  M (001100) → continuation=0, value=6<br>
+                  <br>
+                  <span style="color: #28a745; font-weight: bold;">Decoded: [6, 0, 0, 6]</span>
+                </div>
+              </div>
+
+              <div style="margin: 20px 0;">
+                <strong>Step 4: Interpret the values</strong>
+                <div style="background: #d4edda; padding: 15px; border-radius: 6px; margin-top: 10px; border: 2px solid #28a745;">
+                  <div style="margin: 10px 0;"><strong>[0] = 6</strong> → Move 6 columns right in minified code</div>
+                  <div style="margin: 10px 0;"><strong>[1] = 0</strong> → Same source file (ErrorDemo.vue)</div>
+                  <div style="margin: 10px 0;"><strong>[2] = 0</strong> → Same line in original (line 19)</div>
+                  <div style="margin: 10px 0;"><strong>[3] = 6</strong> → Move 6 columns right in original</div>
+                </div>
+              </div>
+            </div>
+
+            <h3 style="margin: 30px 0 20px 0; color: #333;">Complete Decoded Mappings (First 10)</h3>
+
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <thead>
+                  <tr style="background: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%); color: white;">
+                    <th style="padding: 12px; text-align: left;">#</th>
+                    <th style="padding: 12px; text-align: left;">Segment</th>
+                    <th style="padding: 12px; text-align: left;">Decoded Values</th>
+                    <th style="padding: 12px; text-align: left;">Minified Position</th>
+                    <th style="padding: 12px; text-align: left;">→</th>
+                    <th style="padding: 12px; text-align: left;">Original Position</th>
+                    <th style="padding: 12px; text-align: left;">Name</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 10px; border: 1px solid #ddd;">1</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; background: #764ba2; color: white; font-weight: bold;">wKAkBA</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;">[184, 0, 18, 2, 0]</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; color: #ff6b6b;">Line 1:184</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center; font-size: 1.5em;">→</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; color: #28a745;">Line 19:2</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;"><strong>result</strong></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">2</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; background: #764ba2; color: white; font-weight: bold;">MAAMA</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;">[6, 0, 0, 6, 0]</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; color: #ff6b6b;">Line 1:190</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center; font-size: 1.5em;">→</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; color: #28a745;">Line 19:8</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;"><strong>result</strong></td>
+                  </tr>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 10px; border: 1px solid #ddd;">3</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; background: #764ba2; color: white; font-weight: bold;">EAASC</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;">[2, 0, 0, 9, 1]</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; color: #ff6b6b;">Line 1:192</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center; font-size: 1.5em;">→</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; color: #28a745;">Line 19:17</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;"><strong>ref</strong></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">4</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; background: #764ba2; color: white; font-weight: bold;">EAAY</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;">[2, 0, 0, 12]</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; color: #ff6b6b;">Line 1:194</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center; font-size: 1.5em;">→</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; color: #28a745;">Line 19:29</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-style: italic; color: #999;">—</td>
+                  </tr>
+                  <tr style="background: #fff3cd; border-left: 4px solid #ffc107;">
+                    <td style="padding: 10px; border: 1px solid #ddd;">5</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; background: #764ba2; color: white; font-weight: bold;">IAGrBC</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;">[4, 0, 3, -8, 1]</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; color: #ff6b6b;">Line 1:198</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center; font-size: 1.5em;">→</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; color: #28a745;">Line 22:21</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;"><strong>triggerError</strong> ← The function!</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">6</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; background: #764ba2; color: white; font-weight: bold;">EAAe</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;">[2, 0, 0, 15]</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; color: #ff6b6b;">Line 1:200</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center; font-size: 1.5em;">→</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; color: #28a745;">Line 22:36</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-style: italic; color: #999;">—</td>
+                  </tr>
+                  <tr style="background: #f9f9f9;">
+                    <td style="padding: 10px; border: 1px solid #ddd;">7</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; background: #764ba2; color: white; font-weight: bold;">KAGnBC</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;">[5, 0, 3, -7, 1]</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; color: #ff6b6b;">Line 1:205</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center; font-size: 1.5em;">→</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; color: #28a745;">Line 25:29</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace;"><strong>console</strong> ← Error line!</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div style="background: #d4edda; border-left: 4px solid #28a745; padding: 20px; border-radius: 4px; margin: 30px 0;">
+              <strong style="color: #155724;">🎯 Key Insight: How Browser Uses This</strong><br><br>
+
+              When error occurs at <strong style="color: #ff6b6b;">minified position 205</strong>:<br><br>
+
+              1️⃣ Browser scans mappings until it finds position 205<br>
+              2️⃣ Finds mapping #7: <code>KAGnBC</code> decodes to position 205<br>
+              3️⃣ Reads: <code>[5, 0, 3, -7, 1]</code><br>
+              4️⃣ Calculates: "This is at <strong style="color: #28a745;">ErrorDemo.vue Line 25, Column 29</strong>"<br>
+              5️⃣ Looks up name index 1 → <code>"console"</code><br>
+              6️⃣ Shows you: <code style="background: #f5f5f5; padding: 3px 6px; border-radius: 3px;">console.log(...)</code> at ErrorDemo.vue:25<br><br>
+
+              <strong style="color: #155724;">Without this mapping, you'd only see: "Error at position 205 in minified blob"</strong>
+            </div>
+
+            <h3 style="margin: 30px 0 20px 0; color: #333;">Why Use Relative Values (Deltas)?</h3>
+
+            <div class="comparison-grid">
+              <div class="comparison-box">
+                <div class="comparison-header" style="background: #f8d7da; color: #721c24;">❌ If Using Absolute Positions</div>
+                <div class="comparison-body" style="background: white; color: #333;">
+Position 1: [184, 0, 19, 2, 0]<br>
+Position 2: [190, 0, 19, 8, 0]<br>
+Position 3: [192, 0, 19, 17, 1]<br>
+Position 4: [194, 0, 19, 29, 1]<br>
+<br>
+<span style="color: #721c24;">Large numbers = More bytes to store</span><br>
+<span style="color: #721c24;">Line 19 repeated 4 times = Waste!</span>
+                </div>
+              </div>
+
+              <div class="comparison-box">
+                <div class="comparison-header" style="background: #d4edda; color: #155724;">✅ Using Relative Deltas</div>
+                <div class="comparison-body" style="background: white; color: #333;">
+Position 1: [184, 0, 19, 2, 0]<br>
+Position 2: [6, 0, 0, 6, 0]    ← +6 cols<br>
+Position 3: [2, 0, 0, 9, 1]    ← +2 cols<br>
+Position 4: [2, 0, 0, 12, 1]   ← +2 cols<br>
+<br>
+<span style="color: #155724;">Small numbers = Fewer bytes!</span><br>
+<span style="color: #155724;">Line 0 (same) = Compression!</span><br>
+<strong style="color: #28a745;">Result: ~70% smaller file size!</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="stats-grid" style="margin-top: 30px;">
+              <div class="stat-box" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div class="stat-number">19</div>
+                <div class="stat-label">Total Mappings</div>
+              </div>
+              <div class="stat-box" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="stat-number">~150</div>
+                <div class="stat-label">Characters in Mappings</div>
+              </div>
+              <div class="stat-box" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                <div class="stat-number">70%</div>
+                <div class="stat-label">Size Reduction via Deltas</div>
+              </div>
+              <div class="stat-box" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="stat-number">&lt;1ms</div>
+                <div class="stat-label">Browser Decode Time</div>
+              </div>
+            </div>
+
+          </div>
+        </div>

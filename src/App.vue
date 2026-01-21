@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import ErrorDemo from './components/ErrorDemo.vue'
 </script>
 
 <template>
@@ -13,11 +12,11 @@ import ErrorDemo from './components/ErrorDemo.vue'
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <RouterLink to="/error-demo">Error Demo</RouterLink>
       </nav>
     </div>
   </header>
 
-  <ErrorDemo />
   <RouterView />
 </template>
 
